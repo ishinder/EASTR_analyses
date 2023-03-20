@@ -70,11 +70,5 @@ def main(arglist=None):
     # Export to a TSV file
     df.to_csv(args.outfile, sep="\t")
 
-def test_main():
-    infile = "/ccb/salz2/shinder/projects/EASTR_tests2/lieber_sra/eastr_run.log"
-    outfile = "/ccb/salz2/shinder/projects/EASTR_tests2/lieber_sra/eastr_run_stats.tsv"
-
-
-
 if __name__ == "__main__":
     main()
