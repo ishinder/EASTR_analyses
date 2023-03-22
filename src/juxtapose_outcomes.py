@@ -53,6 +53,10 @@ def juxtapose_by_sample(stats_by_sample:pd.DataFrame, outfilepath:str, pairedID_
 
             # juxtapose
             sample_data = list()
+            sample_data.append(ID)
+            sample_data.append(ID)
+            sample_data.append(treatment_a)
+            sample_data.append(treatment_b)
             for col in ID_stats_a.columns: # must be ordered
                 value_a = ID_stats_a[col].values[0]
                 value_b = ID_stats_b[col].values[0]
