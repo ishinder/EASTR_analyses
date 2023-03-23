@@ -205,7 +205,7 @@ def load_metadata(metadata_file):
     return header,sample_data
 
 
-def get_ref_junc_counts(basedir,gtf_path, bowtie2_index, ref_fa, metadata_file):
+def get_ref_junc_df(basedir,gtf_path, bowtie2_index, ref_fa, metadata_file):
 
     ofile = tempfile.NamedTemporaryFile(delete=False,suffix=".bed")
     ofile.close()
@@ -233,12 +233,18 @@ def get_ref_junc_counts(basedir,gtf_path, bowtie2_index, ref_fa, metadata_file):
                     num_removed = int(line.split(':')[-1].strip())
                     sample_data[sample_name][f"{software}_num_ref_alignments_removed"] = num_removed
 
+    os.remove(ofile)
+
+    return sample_data, header
+
+def get_ref_junc_counts(basedir,gtf_path, bowtie2_index, ref_fa, metadata_file):
+
+    sample_data, header = get_ref_junc_df(basedir,gtf_path, bowtie2_index, ref_fa, metadata_file)
     cols = ['Aligner'] + header + ['Reference Junctions', 
                             'Removed Reference Junctions', 'Novel junctions', 'Removed Novel Junctions', 
                             'Removed Reference Alignments']
     
     df = pd.DataFrame(columns=cols)
-
     for sample_name, data in sample_data.items():
         for software in ['hisat', 'star']:
             num_ref_juncs = len(sample_data[sample_name][f"{software}_ref_juncs"])
@@ -248,19 +254,21 @@ def get_ref_junc_counts(basedir,gtf_path, bowtie2_index, ref_fa, metadata_file):
             num_ref_removed_alns = sample_data[sample_name][f"{software}_num_ref_alignments_removed"] 
             
             # Create a dictionary for each row of data
-            row_dict = {'Aligner': software, 'SRR ID': sample_name, 'Sample ID': data['Sample_ID'], 
-                        'Fraction': data['Fraction'], 'Age Group': data['Age_Group'], 'Library': data['Library'], 
+            row_dict = {'Aligner': software, 'SRR ID': sample_name,
                         'Reference Junctions': num_ref_juncs, 'Removed Reference Junctions': num_ref_removed_juncs, 
                         'Novel junctions': num_novel_juncs, 'Removed Novel Junctions': num_nonref_removed_juncs, 
                         'Removed Reference Alignments': num_ref_removed_alns}
+            
+            for col in header:
+                if col != 'SRR ID':
+                    row_dict[col] = data[col]
             
             # Append the row to the dataframe
             df = df.append(row_dict, ignore_index=True)
 
     df = df.set_index(['Aligner', 'SRR ID'])
     df = df.sort_index()
-    os.remove(ofile)
-
+    
     return df
 
 def main():
@@ -285,10 +293,14 @@ def main():
     if out_summary_file is None:
         out_summary_file = f"{basedir}/eastr_juncs_alns_summary.tsv"
 
+
     # gtf_path="/ccb/salz1/mpertea/stringtie/paper/hg38c_protein_and_lncRNA.gtf"
     # ref_fa = "/ccb/salz7-data/genomes/hg38/hg38p13.fa"
     # bowtie2_index = "/ccb/salz8-2/shinder/bt2_hg38_noPARs_index/hg38mod_noPARs"
     # basedir="/ccb/salz2/shinder/projects/EASTR_tests2/lieber_sra"
+    # eastr_log_file = f"{basedir}/eastr_run.log"
+    # metadata_file = f"{basedir}/metadata.csv"
+    # out_summary_file = f"{basedir}/eastr_juncs_alns_summary.tsv"
 
     df1 = parse_eastr_log_file(eastr_log_file)
     df2 = get_ref_junc_counts(basedir, gtf_path, bowtie2_index, ref_fa, metadata_file)
@@ -300,3 +312,7 @@ def main():
                'Removed Alignments', 'Removed Reference Alignments', 'Removed Novel Alignments', 'Percent Removed Alignments']
     
     merged_df[col_order].to_csv(out_summary_file,sep='\t')
+
+if __name__ == '__main__':
+    print("Starting script...")
+    main()
