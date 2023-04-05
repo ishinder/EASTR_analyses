@@ -10,6 +10,8 @@ def display_elements(iterable, sep=" , "):
 # given conditions A and B and a single stats dataframe containing pairwise A,B data,
 #   reorganize the data into a nested table juxtaposing A,B by individual (matching ID) for each statistic (dataframe column)
 def juxtapose_by_sample(stats_by_sample:pd.DataFrame, outfilepath:str, pairedID_col="sampleID", treatment_col="treatment"):
+    subcols = 3
+    subcol_sep = ',,,'
     print("---------Juxtaposing stats")
     treatments = stats_by_sample[treatment_col].unique()
     treatments_tostr = display_elements(treatments)
@@ -33,7 +35,8 @@ def juxtapose_by_sample(stats_by_sample:pd.DataFrame, outfilepath:str, pairedID_
             header_cols.append(col)
             sub_cols.append("control")
             sub_cols.append("modified")
-        outfile.write(',,'.join(header_cols) + '\n')
+            sub_cols.append("relative change (%)")
+        outfile.write(subcol_sep.join(header_cols) + '\n')
         outfile.write(','.join(sub_cols) + '\n')
         IDs = stats_by_sample.loc[stats_by_sample[treatment_col] == treatment_a, pairedID_col].values
         for ID in IDs:
@@ -53,14 +56,16 @@ def juxtapose_by_sample(stats_by_sample:pd.DataFrame, outfilepath:str, pairedID_
 
             # juxtapose
             sample_data = list()
-            sample_data.append(ID)
-            sample_data.append(ID)
+            for i in range(0, subcols):
+                sample_data.append(ID)
             sample_data.append(treatment_a)
             sample_data.append(treatment_b)
+            sample_data.append("relative_change")
             for col in ID_stats_a.columns: # must be ordered
                 value_a = ID_stats_a[col].values[0]
                 value_b = ID_stats_b[col].values[0]
                 sample_data.append(str(value_a))
                 sample_data.append(str(value_b))
+                sample_data.append(str( round(100*(value_b - value_a)/value_a, 2) ))
             outfile.write(','.join(sample_data) + '\n')
     return
