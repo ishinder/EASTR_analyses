@@ -127,3 +127,7 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+#other
+combine_bam_with_tb.py
+examine_junction.py
