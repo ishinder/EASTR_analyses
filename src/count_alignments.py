@@ -54,14 +54,14 @@ def main(arglist=None):
         aligner_stats = {}
         for file in files:
             aligner_stats[file] = stats[file]
-            aligner_stats[file]["SampleID"] = file.split("/")[-1].split("_", 1)[0]
+            aligner_stats[file]["SRR ID"] = file.split("/")[-1].split("_", 1)[0]
         df = pd.DataFrame.from_dict(aligner_stats, orient="index")
         df.index.name = "Filename"
         df["Aligner"] = aligner
         dfs.append(df)
     df = pd.concat(dfs, axis=0, ignore_index=False)
-    df = df.reset_index().set_index(["Aligner", "SampleID"])
-    df = df.sort_index(level=["Aligner", "SampleID"])
+    df = df.reset_index().set_index(["Aligner", "SRR ID"])
+    df = df.sort_index(level=["Aligner", "SRR ID"])
     df = df.drop("Filename", axis=1)
     df["Percent Removed"] = df.apply(
         lambda row: row["Removed Alignments"] / row["Spliced Alignments"] * 100, axis=1

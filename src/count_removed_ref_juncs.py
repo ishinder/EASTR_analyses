@@ -57,11 +57,18 @@ def main(metadata_file, basedir, removed_juncs, groupby, gtf_path):
     for aligner in ['hisat', 'star']:
         for group in groups[aligner]:
             juncs = groups[aligner][group]
-            num_juncs = len(juncs.intersection(gtf_juncs))
-            print(f"Number of {aligner} references junctions removed, grouped by {group}: {num_juncs}")
+            num_juncs_ref = len(juncs.intersection(gtf_juncs))
+            num_juncs_nov = len(juncs.difference(gtf_juncs))
+            total_juncs = len(juncs)
+            print(f"Number of {aligner} references junctions removed, grouped by {group}: {num_juncs_ref}")
+            print(f"Number of {aligner} novel junctions removed, grouped by {group}: {num_juncs_nov}")
+            print(f"Total number of {aligner} junctions removed, grouped by {group}: {total_juncs}")
 
-        num_juncs = len(all_bed_juncs[aligner].intersection(gtf_juncs))
-        print(f"Number of {aligner} references junctions removed: {num_juncs}")
+        num_juncs_ref = len(all_bed_juncs[aligner].intersection(gtf_juncs))
+        num_juncs_nov = len(all_bed_juncs[aligner].difference(gtf_juncs))
+        print(f"Number of {aligner} references junctions removed: {num_juncs_ref}")
+        print(f"Number of {aligner} novel junctions removed: {num_juncs_nov}")
+        print(f"Total number of {aligner} junctions removed: {len(all_bed_juncs[aligner])}")
 
 def test_main():
     sys.path.append('src') 
@@ -72,6 +79,13 @@ def test_main():
     metadata_file=f"{basedir}/metadata.csv"
     removed_juncs=f"{basedir}/output/removed_junctions"
     groupby="Library"
+
+    gtf_path="/ccb/salz2/shinder/projects/EASTR_tests2/maize_pollen/ref/B73/Zm-B73-REFERENCE-NAM-5.0_Zm00001eb.1.gtf"
+    basedir="/ccb/salz2/shinder/projects/EASTR_tests2/maize_pollen"
+    metadata_file=f"{basedir}/metadata.csv"
+    removed_juncs=f"{basedir}/output/removed_junctions"
+    groupby=None
+
     main(metadata_file, basedir, removed_juncs, groupby, gtf_path)
 
 
