@@ -77,8 +77,9 @@ def get_filelist(directory, extension):
 def run_gffcompare(gtf_path, outdir, ref_gtf, name):
     make_dir(outdir)
     os.chdir(outdir)
-    if not os.path.exists(f"{outdir}/{name}.stats"):
-        cmd = f"gffcompare -r {ref_gtf} {gtf_path} -o {name}"
+    outname = f"{outdir}/{name}"
+    if not os.path.exists(f"{outname}.stats"):
+        cmd = f"gffcompare -r {ref_gtf} {gtf_path} -o {outname}"
         print(cmd)
         subprocess.run(shlex.split(cmd), check=True)
 
@@ -243,7 +244,7 @@ def main(arglist=None):
     
     if outdir is None:
         outdir = f"{basedir}/gffcompare"
-
+    
     if glob_by is None:
         glob_by= "*"
 
@@ -252,13 +253,15 @@ def main(arglist=None):
 
     if p is None:
         p = 1
+    
+    treatments = ["original","filtered"]
 
     #basedir="/ccb/salz2/shinder/projects/EASTR_tests2/lieber_sra"
     #outdir=f"{basedir}/gffcompare"
     #ref_gtf="/ccb/salz1/mpertea/stringtie/paper/hg38c_protein_and_lncRNA.gtf"
 
     gtf_list = {}
-    for t in ["original","filtered"]:
+    for t in treatments:
         odir = f"{outdir}/{t}"
 
         print("GffCompare of", t, "to:", odir)
@@ -268,8 +271,14 @@ def main(arglist=None):
         gtf_list[t] = glob.glob(f"{gtfpath}/{t}/*{glob_by}*.gtf")
 
     gtf_files = gtf_list["original"] + gtf_list["filtered"]
-    run_gffcompare_parallel(gtf_files, outdir, ref_gtf, p=p)
 
+    #run_gffcompare_parallel(gtf_files, outdir, ref_gtf, p=p)
+    print(gtf_files)
+    for t in treatments:
+        for gtf_file in gtf_list[t]:
+            gtf_name = os.path.basename(os.path.splitext(gtf_file)[0])
+            run_gffcompare(gtf_file, f"{outdir}/{t}", ref_gtf, gtf_name)
+    
     # filters=["Novel loci"]
     for filter_by in filters:
         sys.stdout.write(f"*-*-*-*-*-*-*-* Filtering by \"{filter_by}\" *-*-*-*-*-*-*-*\n")

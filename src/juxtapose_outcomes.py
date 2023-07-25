@@ -56,8 +56,9 @@ def juxtapose_by_sample(stats_by_sample:pd.DataFrame, outfilepath:str, pairedID_
 
             # juxtapose
             sample_data = list()
-            for i in range(0, subcols):
-                sample_data.append(ID)
+            sample_data.append(ID)
+            for i in range(1, subcols):
+                sample_data.append("")
             sample_data.append(treatment_a)
             sample_data.append(treatment_b)
             sample_data.append("relative_change")
