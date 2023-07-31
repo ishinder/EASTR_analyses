@@ -138,6 +138,9 @@ def get_junctions_from_bed(bed_file):
     junctions = defaultdict(int)
     with open(bed_file, "r") as bed:
         for line in bed:
+            if len(line.strip().split("\t")) < 6:
+                print(line)
+                
             chrom, start, end, name, score, strand = line.strip().split("\t")[0:6]
             start = int(start)
             end = int(end)
